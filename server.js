@@ -1,5 +1,13 @@
+require('dotenv').config()
 const express = require('express')
 const app = express();
+const mongoose = require('mongoose')
+
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+})
 
 const fruits = require('./models/fruits.js')
 
@@ -49,6 +57,7 @@ app.get('/fruits/:indexOfFruitsArray', (req, res) => {
 //     res.send('data received');
 // });
 
+//this if then statement is for a checkbox. it is called data sterilization/type cohersion. you have to warp the data to be on or off instead of true ot false. It is like categorizing the data, so you can manipulate it in a way that make sense to the computer, and to you to align correctly to get the correct results.  
 // app.post('/fruits', (req, res)=>{
 //     if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
 //         req.body.readyToEat = true; //do some data correction
@@ -71,6 +80,7 @@ app.post('/fruits', (req, res)=>{
         req.body.readyToEat = false;
     }
     fruits.push(req.body);
+    //redirect is going to connect you back to index
     res.redirect('/fruits'); 
 });
 
@@ -89,3 +99,13 @@ app.use((req, res, next) => {
 app.listen(3000,  () => {
     console.log("Listening on Port 3000")
 })
+
+//A mnumonic device to help to remember what order to put your route in:
+//!!! INDUCES
+//Index, meaning the baseline route/home page
+//New
+//Delete
+//Update
+//Create
+//Edit
+//Show
