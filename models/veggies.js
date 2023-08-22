@@ -20,3 +20,7 @@ const veggies = [
     readyToEat: false
   },
 ]
+
+module.exports = veggies
+
+//must export !!!!!!

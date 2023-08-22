@@ -96,6 +96,54 @@ app.use((req, res, next) => {
     next();
 });
 
+const veggies = require('./models/veggies.js')
+
+app.get("/veggies" , (req, res) => {
+    res.render("/veggies/Index" , {
+        veggies: veggies
+    });
+})
+
+app.get('/veggies/new', (req, res) => {
+    res.render('New');
+});
+
+
+app.get("/veggies/:indexOfVeggiesArray" , (req, res) => {
+    //render always refers to a view, in this case, is the jsx file. Synthax : the file of the target view is first in parenthesis
+
+    res.render("veggies/Show" , {
+        //the first veggies is what I am naming the property
+        //the second veggies after the colon is referring to the array
+        //the brackets indicate we are using the data from an array
+        veggies: veggies[req.params.indexOfVeggiesArray]
+    });
+})
+
+
+// app.post('/fruits', (req, res)=>{
+//     if(req.body.readyToEat === 'on'){ 
+//         req.body.readyToEat = true;
+//     } else { 
+//         req.body.readyToEat = false;
+//     }
+//     fruits.push(req.body);
+//     //redirect is going to connect you back to index
+//     res.redirect('/fruits'); 
+// });
+
+//creating a new veggie, we use post
+//this refers to the 
+app.post('/veggies' , (req, res) =>{
+        if(req.body.readyToEat === 'on'){ 
+        req.body.readyToEat = true;
+    } else { 
+        req.body.readyToEat = false;
+    }
+    veggies.push(req.body);
+
+})
+
 app.listen(3000,  () => {
     console.log("Listening on Port 3000")
 })
@@ -109,3 +157,4 @@ app.listen(3000,  () => {
 //Create
 //Edit
 //Show
+
