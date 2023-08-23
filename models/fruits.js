@@ -1,3 +1,6 @@
+// if i were not using MongoDB (this is stored locally)
+
+
 const fruits = [
     {
         name:'apple',

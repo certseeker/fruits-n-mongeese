@@ -12,13 +12,17 @@ class Index extends React.Component {
                             return (
                                 <li>
                                     The{' '}
-                                    <a href={`/fruits/${i}`}>
+                                    {/* the dot in front of id bc I am grabbing the id from the fruit in the map on line 11 */}
+                                    <a href={`/fruits/${fruit._id}`}>
                                     {fruit.name}
                                     </a>{' '}
                                     is {fruit.color} <br></br>
                                     {fruit.readyToEat
                                         ? `It is ready to eat`
                                         : `It is not ready to eat`}
+                                        <form action={`/fruits/${fruit._id}?_method=DELETE`} method="POST">
+                                            <input type="submit" value="DELETE" />
+                                        </form>
                                     <br />
                                 </li>
                             );

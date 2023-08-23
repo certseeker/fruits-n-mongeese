@@ -3,18 +3,24 @@ const express = require('express')
 const app = express();
 const mongoose = require('mongoose')
 
+const methodOverride = require('method-override')
+
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true,
 })
 
-const fruits = require('./models/fruits.js')
+
+// because we are using the capital F's which is the naming convention for models, wwhile initially, our f's were lowercase due to the fruits.js file, we not much change all of our fruits to Fruit to match the mode Fruit.js file. 
+const Fruit = require('./models/Fruit.js')
 
 // app.set('view engine', 'jsx');
 // app.engine('jsx', require('jsx-view-engine').createEngine());
 app.set('view engine', 'jsx');
 app.engine('jsx', require('express-react-views').createEngine());
+
+//add method override
+app.use(methodOverride('_method'));
 
 ////View body of a post request
 // The POST request to our sever has data in it (name, color, readyToEat, etc).
@@ -28,13 +34,25 @@ app.get('/',  (req, res) => {
     res.send('<h1>Hello WISE!</h1>')
 })
 
-//////FRUIT INDEX
+//////FRUIT INDEX, if ia am not using mongo
+// app.get('/fruits', (req, res) => {
+//     //     res.send(fruits);
+//     res.render('Index', {
+//         fruits: fruits
+//     });
+// });
+
 app.get('/fruits', (req, res) => {
-    //     res.send(fruits);
-    res.render('Index', {
-        fruits: fruits
-    });
-});
+    Fruit.find({})
+      .then((allFruit) => {
+        res.render('Index', {
+          fruits: allFruit
+        })
+      })
+      .catch(error => {
+        console.error(error)
+      })
+  })
 
 ///////NEW
 //Page with form to create a new fruit
@@ -42,14 +60,111 @@ app.get('/fruits/new', (req, res) => {
     res.render('New');
 });
 
-//////SHOW
-app.get('/fruits/:indexOfFruitsArray', (req, res) => {
-    // res.send(fruits[req.params.indexOfFruitsArray]);
-    res.render('Show', {
-        fruit: fruits[req.params.indexOfFruitsArray]
-    });
-
+app.delete('/fruits/:id', (req, res)=>{
+    Fruit.deleteOne({_id: req.params.id})
+    .then(info => {
+        console.log(info)
+        res.redirect('/fruits')
+    })
+    // res.send('deleting...');
 });
+
+//Update
+app.put('/fruits/:id', (req, res) => {
+    if (req.body.readyToEat === 'on') {
+      req.body.readyToEat = true;
+    } else {
+      req.body.readyToEat = false;
+    }
+  
+    Fruit.updateOne({ _id: req.params.id }, req.body)
+      .then(info => {
+        console.log(info);
+        res.redirect(`/fruits/${req.params.id}`)
+      })
+  })
+
+//////CREATE
+//Post Route
+//Route handler to tell the browser to create a POST request to /fruits
+app.post('/fruits', (req, res) => {
+    if (req.body.readyToEat === 'on') {
+      req.body.readyToEat = true;
+    } else {
+      req.body.readyToEat = false;
+    }
+  
+    Fruit.create(req.body)
+      .then((createdFruit) => {
+        res.redirect('/fruits')
+      })
+      .catch(error => {
+        console.error(error)
+      })
+  });
+
+//seed
+app.get('/fruits/seed', (req, res) => {
+    Fruit.insertMany([
+      {
+        name: 'grapefruit',
+        color: 'pink',
+        readyToEat: true
+      },
+      {
+        name: 'grape',
+        color: 'purple',
+        readyToEat: false
+      },
+      {
+        name: 'avocado',
+        color: 'green',
+        readyToEat: true
+      }
+    ])
+  })
+
+
+//Edit
+app.get('/fruits/:id/edit', (req, res) => {
+    Fruit.findOne({ _id: req.params.id })
+      .then(foundFruit => {
+        res.render(
+          'Edit',
+          {
+            fruit: foundFruit
+          }
+        )
+      })
+      .catch(error => console.log(error))
+  })
+
+
+
+
+//////SHOW this was for the format without Mongo
+// app.get('/fruits/:indexOfFruitsArray', (req, res) => {
+//     // res.send(fruits[req.params.indexOfFruitsArray]);
+//     res.render('Show', {
+//         fruit: fruits[req.params.indexOfFruitsArray]
+//     });
+
+// });
+//when you see an underscore and then the name, it grabs the unique _id that is set by MongoDB. this is better to use bc it specifcally targets that item. you caould also say name, ect or another category on the schema (without an _, id is the on;y part that needs and underscore), but it will grab all the items with that identifyer. Depending on what you are trying to get that may be too much.  
+app.get('/fruits/:id', (req, res) => {
+    Fruit.findOne({ _id: req.params.id })
+      .then((foundFruit) => {
+        res.render('Show', {
+          fruit: foundFruit
+        })
+      })
+      .catch(error => {
+        console.error(error)
+      })
+  })
+
+
+
 
 //////POST ROUTE
 // app.post('/fruits', (req, res)=>{
@@ -70,19 +185,10 @@ app.get('/fruits/:indexOfFruitsArray', (req, res) => {
 // });
 
 
-//////CREATE
-//Post Route
-//Route handler to tell the browser to create a POST request to /fruits
-app.post('/fruits', (req, res)=>{
-    if(req.body.readyToEat === 'on'){ 
-        req.body.readyToEat = true;
-    } else { 
-        req.body.readyToEat = false;
-    }
-    fruits.push(req.body);
-    //redirect is going to connect you back to index
-    res.redirect('/fruits'); 
-});
+
+
+
+
 
 //////EXECUTES FOR ALL ROUTES
 ////MiddleWare
